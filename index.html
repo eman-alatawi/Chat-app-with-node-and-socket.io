@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .App {
+        width: 100vw;
+        height: 100vh;
+        background: #fff;
+        color: #212121;
+        font-family: "Open Sans", sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      body {
+        margin: 0%;
+        padding: 0%;
+      }
+      @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,700");
+
+      .chat-window {
+        width: 400px;
+        height: 420px;
+      }
+
+      .chat-window p {
+        margin: 0;
+      }
+      .chat-window .chat-header {
+        height: 45px;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        background: #055d88;
+        position: relative;
+        cursor: pointer;
+      }
+      .chat-window .chat-header p {
+        display: block;
+        padding: 0 1em 0 2em;
+        color: #fff;
+        font-weight: 700;
+        line-height: 45px;
+      }
+
+      .chat-window .chat-body {
+        height: calc(450px - (45px + 70px));
+        border: 1px solid #263238;
+        background: #fff;
+        position: relative;
+        overflow-y: scroll;
+      }
+      .chat-window .chat-body .message-container {
+        width: 100%;
+        height: 100%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+      }
+      .chat-window .chat-body .message {
+        height: auto;
+        padding: 10px;
+        display: flex;
+      }
+
+      .message-content {
+        width: auto;
+        height: auto;
+        min-height: 40px;
+        max-width: 120px;
+        background-color: rgb(133, 216, 194);
+        border-radius: 5px;
+        color: white;
+        display: flex;
+        align-items: center;
+        margin-right: 5px;
+        margin-left: 5px;
+        padding-right: 5px;
+        padding-left: 5px;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+
+      .message-meta #author {
+        margin-left: 10px;
+        font-weight: bold;
+      }
+
+      .message-meta {
+        padding: 0 0.4rem;
+        display: flex;
+        font-size: 12px;
+      }
+
+      .chat-window .chat-footer {
+        padding: 0.3rem;
+        height: 60px;
+        border: 1px solid #263238;
+        border-top: none;
+        display: flex;
+      }
+
+      input{
+        padding: 0 0.7em;
+        font-size: 1em;
+        outline: none;
+        font-family: "Open Sans", sans-serif;
+      }
+
+      .chat-window .chat-footer input {
+        height: 100%;
+        width: 20rem;
+        border: 0;
+       
+        border-right: 1px dotted #7f96a2;
+      }
+
+      input#name{
+        width: 23rem;
+        margin-bottom: 1rem;
+        padding: 0.8rem;
+        border: none;
+        background-color: rgb(218, 231, 244);
+        border-radius: 2rem;
+      }
+
+      .chat-window .chat-footer button {
+        border: 0;
+        place-items: center;
+        cursor: pointer;
+        height: 100%;
+        background: transparent;
+        outline: none;
+        font-size: 25px;
+        color: lightgray;
+      }
+
+      .chat-window .chat-footer button:hover {
+        color: #43a047;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="App">
+      <div class="chat-window">
+        <input type="text" placeholder="name..." id="name" minlength="1" />
+
+        <div class="chat-header">
+          <p>Live Chat</p>
+        </div>
+        <div class="chat-body">
+          <ul id="messages"></ul>
+        </div>
+        <div class="chat-footer">
+          <form action="">
+            <input type="text" placeholder="message..." id="message" />
+            <button type="submit">&#9658;</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+      integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+      var socket = io();
+      $(function () {
+        $("form").submit(function () {
+          const clientName = $("#name").val();
+          if (clientName !== "") {
+            const messageData = {
+              client: clientName,
+              message: $("#message").val(),
+              time:
+                new Date(Date.now()).getHours() +
+                ":" +
+                new Date(Date.now()).getMinutes(),
+            };
+            socket.emit("send_message", messageData);
+            $("#message").val("");
+            return false;
+          }
+        });
+      });
+
+      socket.on("receive_message", (data) => {
+        $("#messages").append(
+          $(` <div>
+                <div class="message-content">
+                  <p>${data.message}</p>
+                </div>
+                <div class="message-meta">
+                  <p id="time">${data.time}</p>
+                  <p id="author">${data.client}</p>
+                </div>
+              </div>`)
+        );
+      });
+    </script>
+  </body>
+</html>
