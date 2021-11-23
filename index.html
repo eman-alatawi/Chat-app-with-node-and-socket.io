@@ -24,6 +24,7 @@
       .chat-window {
         width: 400px;
         height: 420px;
+        margin-bottom: 10rem;
       }
 
       .chat-window p {
@@ -76,21 +77,25 @@
         align-items: center;
         margin-right: 5px;
         margin-left: 5px;
+       
         padding-right: 5px;
         padding-left: 5px;
         overflow-wrap: break-word;
         word-break: break-word;
       }
 
-      .message-meta #author {
-        margin-left: 10px;
+      .message-meta #sender {
         font-weight: bold;
+        color: blue
       }
 
       .message-meta {
         padding: 0 0.4rem;
         display: flex;
-        font-size: 12px;
+        flex-direction: column;
+
+        font-size: 10px;
+        margin-bottom: 1.5rem;
       }
 
       .chat-window .chat-footer {
@@ -101,7 +106,7 @@
         display: flex;
       }
 
-      input{
+      input {
         padding: 0 0.7em;
         font-size: 1em;
         outline: none;
@@ -112,11 +117,12 @@
         height: 100%;
         width: 20rem;
         border: 0;
-       
+
         border-right: 1px dotted #7f96a2;
       }
 
-      input#name{
+      input#senderName,
+      #receiverName {
         width: 23rem;
         margin-bottom: 1rem;
         padding: 0.8rem;
@@ -144,7 +150,18 @@
   <body>
     <div class="App">
       <div class="chat-window">
-        <input type="text" placeholder="name..." id="name" minlength="1" />
+        <input
+          type="text"
+          placeholder="from..."
+          id="senderName"
+          minlength="1"
+        />
+        <input
+          type="text"
+          placeholder="to..."
+          id="receiverName"
+          minlength="1"
+        />
 
         <div class="chat-header">
           <p>Live Chat</p>
@@ -169,38 +186,72 @@
     ></script>
     <script>
       var socket = io();
+      var chat = [];
       $(function () {
         $("form").submit(function () {
-          const clientName = $("#name").val();
-          if (clientName !== "") {
+          const sender = $("#senderName").val();
+          const receiver = $("#receiverName").val();
+          const message = $("#message").val()
+          if (sender !== "" && receiver !== "" && message !== "") {
             const messageData = {
-              client: clientName,
-              message: $("#message").val(),
-              time:
-                new Date(Date.now()).getHours() +
-                ":" +
-                new Date(Date.now()).getMinutes(),
+              content: message,
+              from: sender,
+              to: receiver,
+              time: new Date(),
             };
-            socket.emit("send_message", messageData);
+            socket.emit("message", messageData);
             $("#message").val("");
+            $("#receiverName").val("");
+            $("#senderName").val("");
             return false;
           }
         });
       });
 
-      socket.on("receive_message", (data) => {
-        $("#messages").append(
-          $(` <div>
+      function display(data){
+        for (const message of data) {
+          var time = new Date(message.createdAt)
+          var hr= time.getHours()
+          var min = time.getMinutes()
+            $("#messages").append(
+              $(` <div>
                 <div class="message-content">
-                  <p>${data.message}</p>
+                  <p>${message.content}</p>
                 </div>
                 <div class="message-meta">
-                  <p id="time">${data.time}</p>
-                  <p id="author">${data.client}</p>
+                  <p id="time"> ${hr}:${min}</p>
+                  <p id="sender">From: ${message.from}</p>
+                  <p id="receiver">To: ${message.to}</p>
                 </div>
               </div>`)
-        );
+            );
+          }
+      }
+      // Load all messages in the window.
+      socket.on("init", (data) => {
+        if (data) {
+          display(data.reverse()) 
+        }
       });
+
+      socket.on("push", (data) => {
+        location.reload()
+
+        if(data){
+          $("#messages").append(
+              $(` <div>
+                <div class="message-content">
+                  <p>${data.content}</p>
+                </div>
+                <div class="message-meta">
+                  <p id="time">${data.createdAt}</p>
+                  <p id="sender">From: ${data.from}</p>
+                  <p id="receiver">To: ${data.to}</p>
+                </div>
+              </div>`)
+            );
+        }
+      })
     </script>
   </body>
 </html>
