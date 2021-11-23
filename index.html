@@ -66,10 +66,10 @@
       }
 
       .message-content {
-        width: auto;
+        width: fit-content;
         height: auto;
         min-height: 40px;
-        max-width: 120px;
+        max-width: 280px;
         background-color: rgb(133, 216, 194);
         border-radius: 5px;
         color: white;
@@ -77,7 +77,7 @@
         align-items: center;
         margin-right: 5px;
         margin-left: 5px;
-       
+
         padding-right: 5px;
         padding-left: 5px;
         overflow-wrap: break-word;
@@ -86,7 +86,7 @@
 
       .message-meta #sender {
         font-weight: bold;
-        color: blue
+        color: blue;
       }
 
       .message-meta {
@@ -186,12 +186,11 @@
     ></script>
     <script>
       var socket = io();
-      var chat = [];
       $(function () {
         $("form").submit(function () {
           const sender = $("#senderName").val();
           const receiver = $("#receiverName").val();
-          const message = $("#message").val()
+          const message = $("#message").val();
           if (sender !== "" && receiver !== "" && message !== "") {
             const messageData = {
               content: message,
@@ -206,13 +205,12 @@
             return false;
           }
         });
-      });
 
-      function display(data){
-        for (const message of data) {
-          var time = new Date(message.createdAt)
-          var hr= time.getHours()
-          var min = time.getMinutes()
+        function display(data) {
+          for (const message of data) {
+            var time = new Date(message.createdAt);
+            var hr = time.getHours();
+            var min = time.getMinutes();
             $("#messages").append(
               $(` <div>
                 <div class="message-content">
@@ -226,19 +224,18 @@
               </div>`)
             );
           }
-      }
-      // Load all messages in the window.
-      socket.on("init", (data) => {
-        if (data) {
-          display(data.reverse()) 
         }
-      });
+        // Load all messages in the window.
+        socket.on("init", (data) => {
+          if (data) {
+            display(data.reverse());
+          }
+        });
 
-      socket.on("push", (data) => {
-        location.reload()
-
-        if(data){
-          $("#messages").append(
+        socket.on("push", (data) => {
+          location.reload();
+          if (data) {
+            $("#messages").append(
               $(` <div>
                 <div class="message-content">
                   <p>${data.content}</p>
@@ -250,8 +247,9 @@
                 </div>
               </div>`)
             );
-        }
-      })
+          }
+        });
+      });
     </script>
   </body>
 </html>
