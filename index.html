@@ -206,13 +206,12 @@
           }
         });
 
-        function display(data) {
-          for (const message of data) {
-            var time = new Date(message.createdAt);
-            var hr = time.getHours();
-            var min = time.getMinutes();
-            $("#messages").append(
-              $(` <div>
+        function display(message) {
+          var time = new Date(message.createdAt);
+          var hr = time.getHours();
+          var min = time.getMinutes();
+          $("#messages").append(
+            $(` <div>
                 <div class="message-content">
                   <p>${message.content}</p>
                 </div>
@@ -222,31 +221,21 @@
                   <p id="receiver">To: ${message.to}</p>
                 </div>
               </div>`)
-            );
-          }
+          );
         }
         // Load all messages in the window.
-        socket.on("init", (data) => {
-          if (data) {
-            display(data.reverse());
+        socket.on("init", (msg) => {
+          if (msg) {
+            for (const message of msg.reverse()) {
+              display(message);
+            }
           }
         });
 
-        socket.on("push", (data) => {
+        socket.on("push", (msg) => {
           location.reload();
-          if (data) {
-            $("#messages").append(
-              $(` <div>
-                <div class="message-content">
-                  <p>${data.content}</p>
-                </div>
-                <div class="message-meta">
-                  <p id="time">${data.createdAt}</p>
-                  <p id="sender">From: ${data.from}</p>
-                  <p id="receiver">To: ${data.to}</p>
-                </div>
-              </div>`)
-            );
+          if (msg) {
+            display(msg);
           }
         });
       });
